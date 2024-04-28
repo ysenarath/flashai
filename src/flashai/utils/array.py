@@ -22,7 +22,6 @@ import pandas as pd
 import torch
 from datasets import Dataset as HuggingFaceDataset
 from numpy import typing as nt
-from octoflow.data import Dataset as OctoFlowDataset
 from torch import Tensor
 from typing_extensions import Self
 
@@ -31,6 +30,11 @@ __all__ = [
     "to_numpy",
     "to_torch",
 ]
+
+try:
+    from octoflow.data import Dataset as OctoFlowDataset
+except ImportError:
+    OctoFlowDataset = list
 
 T = TypeVar("T")
 
