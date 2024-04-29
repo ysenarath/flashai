@@ -23,9 +23,9 @@ from torch.utils.data.dataloader import default_collate
 from typing_extensions import ParamSpec, Self, Unpack
 
 from flashai.callbacks import Callback, CallbackList
-from flashai.data import Record, RecordBatch, create_dataset
 from flashai.metrics import Evaluator, Metric
 from flashai.utils.array import concat, detach, move_to_device
+from flashai.utils.data import Dataset, Record, RecordBatch
 
 P = ParamSpec("P")
 
@@ -103,7 +103,10 @@ class Module(torch.nn.Module, Generic[X, Y, Z]):
         self.training_args.clear()
         self.training_args.update(kwargs)
         batch_size = self.training_args.get("batch_size", 32)
-        train_dataset = create_dataset(x, y)
+        if isinstance(x, Dataset) and y is not None:
+            msg = "y should be None when x is a Dataset"
+            raise ValueError(msg)
+        train_dataset = x if isinstance(x, Dataset) else Dataset(x, y)
         shuffle = self.training_args.get("shuffle", True)
         train_dataloader = DataLoader(
             train_dataset,
@@ -318,7 +321,10 @@ class Module(torch.nn.Module, Generic[X, Y, Z]):
         device = next(self.parameters()).device
         if not isinstance(callbacks, CallbackList):
             callbacks = CallbackList(callbacks)
-        test_dataset = create_dataset(x, y)
+        if isinstance(x, Dataset) and y is not None:
+            msg = "y should be None when x is a Dataset"
+            raise ValueError(msg)
+        test_dataset = x if isinstance(x, Dataset) else Dataset(x, y)
         test_dataloader = DataLoader(
             test_dataset,
             shuffle=False,

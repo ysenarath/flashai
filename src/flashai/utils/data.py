@@ -32,7 +32,6 @@ __all__ = [
     "IterableDataset",
     "Record",
     "RecordBatch",
-    "create_dataset",
 ]
 
 XT, YT = TypeVar("XT"), TypeVar("YT")
@@ -167,17 +166,3 @@ class Dataset(TorchDataset, Generic[XT, YT]):
 class IterableDataset(Dataset, IterableTorchDataset):
     def __iter__(self) -> Generator[Record, None, None]:
         yield from (self[i] for i in range(len(self)))
-
-
-def create_dataset(
-    x: Sequence[XT],
-    y: Optional[Sequence[YT]] = None,
-    /,
-    iterable: bool = False,
-) -> Dataset[XT, YT]:
-    if isinstance(x, Dataset):
-        if y is not None:
-            msg = "y must be None if x is a Dataset"
-            raise ValueError(msg)
-        return x
-    return Dataset(x, y, iterable=iterable)
